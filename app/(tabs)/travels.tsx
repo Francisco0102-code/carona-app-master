@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Alert, Modal } from 'react-native';
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const CadastroCarona = () => {
+const CadastroCarona = ({ setModalVisible }) => {
     const [motorista, setMotorista] = useState('');
     const [origem, setOrigem] = useState('');
     const [destino, setDestino] = useState('');
@@ -19,13 +19,15 @@ const CadastroCarona = () => {
                 vagas: Number(vagas),
             });
             Alert.alert('Sucesso', 'Carona cadastrada com sucesso!');
+            setModalVisible(false); // Fecha o modal após o cadastro
         } catch (error) {
             Alert.alert('Erro', 'Não foi possível cadastrar a carona.');
         }
     };
 
     return (
-        <View style={style.cadastroContainer}>
+        <View style={style.modalContent}>
+            <Text style={style.modalTitle}>Cadastrar Carona</Text>
             <Text style={style.label}>Motorista:</Text>
             <TextInput
                 style={style.input}
@@ -65,14 +67,32 @@ const CadastroCarona = () => {
             <Pressable style={style.button} onPress={cadastrarCarona}>
                 <Text style={style.buttonText}>Cadastrar Carona</Text>
             </Pressable>
+            <Pressable style={style.closeButton} onPress={() => setModalVisible(false)}>
+                <Text style={style.closeButtonText}>Fechar</Text>
+            </Pressable>
         </View>
     );
 };
 
 const Travels = () => {
+    const [modalVisible, setModalVisible] = useState(false);
+
     return (
         <ScrollView contentContainerStyle={style.container}>
-            <CadastroCarona />
+            <Pressable style={style.button} onPress={() => setModalVisible(true)}>
+                <Text style={style.buttonText}>Cadastrar Carona</Text>
+            </Pressable>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={style.modalContainer}>
+                    <CadastroCarona setModalVisible={setModalVisible} />
+                </View>
+            </Modal>
         </ScrollView>
     );
 };
@@ -114,9 +134,36 @@ const style = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-    cadastroContainer: {
-        width: '100%',
-        marginTop: 20,
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fundo semi-transparente
+    },
+    modalContent: {
+        width: '90%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 20,
+        elevation: 5,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 15,
+    },
+    closeButton: {
+        backgroundColor: 'red',
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 10,
+        marginTop: 10,
+    },
+    closeButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
 
