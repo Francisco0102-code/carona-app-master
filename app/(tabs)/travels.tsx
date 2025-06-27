@@ -1,170 +1,240 @@
-import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Alert, Modal } from 'react-native';
-import React, { useState } from 'react';
-import axios from 'axios';
-
-const CadastroCarona = ({ setModalVisible }) => {
-    const [motorista, setMotorista] = useState('');
-    const [origem, setOrigem] = useState('');
-    const [destino, setDestino] = useState('');
-    const [dataHora, setDataHora] = useState('');
-    const [vagas, setVagas] = useState('');
-
-    const cadastrarCarona = async () => {
-        try {
-            await axios.post('http://localhost:8000/api/caronas/', {
-                motorista,
-                origem,
-                destino,
-                data_hora: dataHora,
-                vagas: Number(vagas),
-            });
-            Alert.alert('Sucesso', 'Carona cadastrada com sucesso!');
-            setModalVisible(false); // Fecha o modal após o cadastro
-        } catch (error) {
-            Alert.alert('Erro', 'Não foi possível cadastrar a carona.');
-        }
-    };
-
-    return (
-        <View style={style.modalContent}>
-            <Text style={style.modalTitle}>Cadastrar Carona</Text>
-            <Text style={style.label}>Motorista:</Text>
-            <TextInput
-                style={style.input}
-                placeholder="Digite o nome do motorista"
-                value={motorista}
-                onChangeText={setMotorista}
-            />
-            <Text style={style.label}>Origem:</Text>
-            <TextInput
-                style={style.input}
-                placeholder="Digite a origem"
-                value={origem}
-                onChangeText={setOrigem}
-            />
-            <Text style={style.label}>Destino:</Text>
-            <TextInput
-                style={style.input}
-                placeholder="Digite o destino"
-                value={destino}
-                onChangeText={setDestino}
-            />
-            <Text style={style.label}>Data e Hora:</Text>
-            <TextInput
-                style={style.input}
-                placeholder="Digite a data e hora (ex: 2025-06-01 14:30)"
-                value={dataHora}
-                onChangeText={setDataHora}
-            />
-            <Text style={style.label}>Vagas:</Text>
-            <TextInput
-                style={style.input}
-                placeholder="Digite o número de vagas"
-                keyboardType="numeric"
-                value={vagas}
-                onChangeText={setVagas}
-            />
-            <Pressable style={style.button} onPress={cadastrarCarona}>
-                <Text style={style.buttonText}>Cadastrar Carona</Text>
-            </Pressable>
-            <Pressable style={style.closeButton} onPress={() => setModalVisible(false)}>
-                <Text style={style.closeButtonText}>Fechar</Text>
-            </Pressable>
-        </View>
-    );
-};
+import { View, Text, FlatList, Button, TextInput, StyleSheet, Modal, TouchableOpacity } from 'react-native'
+import React, { useEffect, useState } from 'react'
 
 const Travels = () => {
-    const [modalVisible, setModalVisible] = useState(false);
+  interface Carona {
+    id: number
+    origin: string
+    destination: string
+    date: string
+    time: string
+    available_seats: number
+  }
 
-    return (
-        <ScrollView contentContainerStyle={style.container}>
-            <Pressable style={style.button} onPress={() => setModalVisible(true)}>
-                <Text style={style.buttonText}>Cadastrar Carona</Text>
-            </Pressable>
+  const [caronas, setCaronas] = useState<Carona[]>([])
+  const [origin, setOrigin] = useState('')
+  const [destination, setDestination] = useState('')
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('')
+  const [availableSeats, setAvailableSeats] = useState('')
+  const [driverId, setDriverId] = useState('')
+  const [modalVisible, setModalVisible] = useState(false)
 
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View style={style.modalContainer}>
-                    <CadastroCarona setModalVisible={setModalVisible} />
-                </View>
-            </Modal>
-        </ScrollView>
-    );
-};
+  // Função para buscar todas as caronas
+  const fetchCaronas = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/caronas')
+      const data = await response.json()
+      setCaronas(data)
+    } catch (error) {
+      console.error('Erro ao buscar caronas:', error)
+    }
+  }
 
-const style = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f5f5f5',
-        padding: 16,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 5,
-    },
-    input: {
-        width: '100%',
-        height: 40,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        marginBottom: 15,
-        backgroundColor: '#fff',
-    },
-    button: {
-        backgroundColor: 'black',
-        height: 56,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 10,
-        width: '100%',
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fundo semi-transparente
-    },
-    modalContent: {
-        width: '90%',
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 20,
-        elevation: 5,
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 15,
-    },
-    closeButton: {
-        backgroundColor: 'red',
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 10,
-        marginTop: 10,
-    },
-    closeButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-});
+  // Função para criar uma nova carona
+  const createCarona = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/caronas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          origin,
+          destination,
+          date,
+          time,
+          available_seats: parseInt(availableSeats),
+          driver_id: parseInt(driverId),
+        }),
+      })
+      if (response.ok) {
+        fetchCaronas() // Atualiza a lista de caronas
+        setModalVisible(false) // Fecha o modal
+      }
+    } catch (error) {
+      console.error('Erro ao criar carona:', error)
+    }
+  }
 
-export default Travels;
+  // Função para deletar uma carona
+  const deleteCarona = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/caronas/${id}`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        fetchCaronas() // Atualiza a lista de caronas após deletar
+      } else {
+        console.error('Erro ao deletar carona:', response.statusText)
+      }
+    } catch (error) {
+      console.error('Erro ao deletar carona:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchCaronas()
+  }, [])
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Suas Caronas</Text>
+      <FlatList
+        data={caronas}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.caronaItem}>
+            <Text style={styles.caronaText}>Origem: {item.origin}</Text>
+            <Text style={styles.caronaText}>Destino: {item.destination}</Text>
+            <Text style={styles.caronaText}>Data: {item.date}</Text>
+            <Text style={styles.caronaText}>Hora: {item.time}</Text>
+            <Text style={styles.caronaText}>Vagas disponíveis: {item.available_seats}</Text>
+            <Button title="Deletar" onPress={() => deleteCarona(item.id)} color="#ff4d4d" />
+          </View>
+        )}
+      />
+      <TouchableOpacity style={styles.floatingButton} onPress={() => setModalVisible(true)}>
+        <Text style={styles.floatingButtonText}>+</Text>
+      </TouchableOpacity>
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Cadastrar Carona</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Origem"
+              value={origin}
+              onChangeText={setOrigin}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Destino"
+              value={destination}
+              onChangeText={setDestination}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Data (YYYY-MM-DD)"
+              value={date}
+              onChangeText={setDate}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Hora (HH:MM:SS)"
+              value={time}
+              onChangeText={setTime}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Vagas disponíveis"
+              value={availableSeats}
+              onChangeText={setAvailableSeats}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="ID do motorista"
+              value={driverId}
+              onChangeText={setDriverId}
+              keyboardType="numeric"
+            />
+            <View style={styles.modalButtons}>
+              <Button title="Cancelar" onPress={() => setModalVisible(false)} color="#ff4d4d" />
+              <Button title="Salvar" onPress={createCarona} color="#4CAF50" />
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+    color: '#333',
+  },
+  caronaItem: {
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  caronaText: {
+    fontSize: 16,
+    color: '#555',
+    marginBottom: 4,
+  },
+  floatingButton: {
+    position: 'absolute',
+    bottom: 90,
+    right: 20,
+    backgroundColor: '#4CAF50',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  floatingButtonText: {
+    fontSize: 24,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+})
+
+export default Travels
