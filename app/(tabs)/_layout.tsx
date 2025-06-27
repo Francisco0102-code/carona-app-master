@@ -49,20 +49,21 @@ headerTintColor: '#fff',
                   }}
                
             />
-            <Tabs.Screen
-                name="settings"
-                options={{
-                    title: 'Settings',
-                    tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
-                  }}
-                
-            />
+        
 
             <Tabs.Screen
                 name="travels"
                 options={{
-                    title: 'Travels',
+                    title: 'Caronas',
                     tabBarIcon: ({ color }) => <FontAwesome size={28} name="map" color={color} />,
+                  }}
+                
+            />
+            <Tabs.Screen
+                name="settings"
+                options={{
+                    title: 'Meu Perfil',
+                    tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
                   }}
                 
             />

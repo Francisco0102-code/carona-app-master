@@ -18,16 +18,16 @@ const Driver = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [tel, setTel] = useState("");
-  const [marca, setMarca] = useState("");
-  const [modelo, setModelo] = useState("");
-  const [ano, setAno] = useState("");
-  const [placa, setPlaca] = useState("");
+  const [carbrand, setCarbrand] = useState(""); // Atualizado para "carbrand"
+  const [carmodel, setCarmodel] = useState(""); // Atualizado para "carmodel"
+  const [caryear, setCaryear] = useState(""); // Atualizado para "caryear"
+  const [carplate, setCarplate] = useState(""); // Atualizado para "carplate"
 
   const handleSaveUserDriver = async () => {
-    console.log(marca);
-    console.log(modelo);
-    console.log(ano);
-    console.log(placa);
+    console.log(carbrand);
+    console.log(carmodel);
+    console.log(caryear);
+    console.log(carplate);
 
     const response = await fetch("http://localhost:8000/api/register", {
       method: "POST",
@@ -41,10 +41,10 @@ const Driver = () => {
         type: "driver",
         tel,
         password,
-        brand: marca,
-        model: modelo,
-        year: ano,
-        plate: placa,
+        carbrand, // Atualizado para "carbrand"
+        carmodel, // Atualizado para "carmodel"
+        caryear, // Atualizado para "caryear"
+        carplate, // Atualizado para "carplate"
       }),
     });
     const data = await response.json();
@@ -53,7 +53,7 @@ const Driver = () => {
       Alert.alert("Cadastro realizado com sucesso!");
       router.push("/(tabs)/home");
     } else {
-      Alert.alert("Erro ao cadastrar motorista:", data);
+      Alert.alert("Erro ao cadastrar motorista:", data.message || "Erro desconhecido.");
     }
   };
 
@@ -90,7 +90,7 @@ const Driver = () => {
             paddingVertical: 18,
           }}
         >
-          Vamos realizar o seu cadrastro, só precisamos de algumas informações
+          Vamos realizar o seu cadastro, só precisamos de algumas informações
         </Text>
         <View style={{ paddingHorizontal: 25 }}>
           <Text
@@ -176,8 +176,8 @@ const Driver = () => {
           </Text>
           <Text style={{ fontSize: 18 }}>Marca</Text>
           <TextInput
-            onChangeText={(txt) => setMarca(txt)}
-            value={marca}
+            onChangeText={(txt) => setCarbrand(txt)}
+            value={carbrand}
             style={{
               backgroundColor: "#FDFDFD",
               borderWidth: 1,
@@ -190,8 +190,8 @@ const Driver = () => {
           />
           <Text style={{ fontSize: 18 }}>Modelo</Text>
           <TextInput
-            onChangeText={(txt) => setModelo(txt)}
-            value={modelo}
+            onChangeText={(txt) => setCarmodel(txt)}
+            value={carmodel}
             style={{
               backgroundColor: "#FDFDFD",
               borderWidth: 1,
@@ -204,8 +204,8 @@ const Driver = () => {
           />
           <Text style={{ fontSize: 18 }}>Ano</Text>
           <TextInput
-            onChangeText={(txt) => setAno(txt)}
-            value={ano}
+            onChangeText={(txt) => setCaryear(txt)}
+            value={caryear}
             style={{
               backgroundColor: "#FDFDFD",
               borderWidth: 1,
@@ -218,8 +218,8 @@ const Driver = () => {
           />
           <Text style={{ fontSize: 18 }}>Placa</Text>
           <TextInput
-            onChangeText={(txt) => setPlaca(txt)}
-            value={placa}
+            onChangeText={(txt) => setCarplate(txt)}
+            value={carplate}
             style={{
               backgroundColor: "#FDFDFD",
               borderWidth: 1,
@@ -240,10 +240,7 @@ const Driver = () => {
           alignItems: "center",
         }}
       >
-        <Pressable
-          // onPress={() => router.push('/(tabs)/home')}
-          onPress={handleSaveUserDriver}
-        >
+        <Pressable onPress={handleSaveUserDriver}>
           <Text
             style={{
               color: "#FFF",
